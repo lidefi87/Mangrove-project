@@ -1,0 +1,97 @@
+#Clear all variables
+rm(list=ls())
+
+#Load relevant libraries
+library(stringr)
+library(raster)
+library(rgdal)
+library(RStoolbox)
+
+#Set working directory - where all data to be analysed is located
+setwd("Y:/BHP - BHP Billiton/BHP1704 ED Consultancy/GIS/Doce water colour baseline/Satellite Images Rio Doce basin/")
+
+#Upload points for Rio Doce Path
+RioDoce = read.csv("RioDocePoints.csv")
+#Add ID column to data frame
+RioDoce = data.frame(ID=c(1:nrow(RioDoce)),RioDoce)
+#Identify columsn to be used as coordinates for layer
+coordinates(RioDoce)= ~Lon+ Lat
+# #Create buffer around river to minimize RAM usage
+# bufRD=buffer(RioDoce,width=500)
+
+#Get directories of all locations of downloaded Landsat images
+FilePaths=list.dirs() #Get all directories
+#Select only directories with satellite images
+FilePaths=subset(FilePaths,grepl(glob2rx("*/201*"),FilePaths))
+FilePaths=FilePaths[-which(grepl("gap_mask",FilePaths)|grepl("Done",FilePaths))]
+
+#Create .csv and .shp files
+for(j in 1:length(FilePaths)){
+  setwd(FilePaths[j])
+  #Identifying metadata file
+  MT=list.files(pattern = "MTL.txt$")
+  #Upload metadata file
+  meta=readMeta(MT)
+  #Create multilayered raster based on metadata
+  MB=stackMeta(meta)
+  #Identifying BQA layer
+  BQA=list.files(pattern="BQA.TIF$")
+  #Upload metadata file
+  qa=raster(BQA)
+  # #Crop stack to river buffer
+  # cropMB=crop(MB,bufRD)
+  #Creating cloud shadow layer
+  if(grepl(glob2rx("*L7"),FilePaths[j])==TRUE){
+    CS=c(928, 932, 936, 940, 960, 964, 968, 972)
+    for(i in 1:length(CS)){
+      qa[qa==CS[i]]=NA}
+  }else if(grepl(glob2rx("*L8"),FilePaths[j])==TRUE){
+    CS=c(2976, 2980, 2984, 2988, 3008, 3012, 3016, 3020, 7072, 7076, 7080, 7084, 7104, 7108, 7112, 7116)
+    for(i in 1:length(CS)){
+      qa[qa==CS[i]]=NA}}
+  rm(MT,BQA,CS)
+  MB_noshadow=mask(MB,qa)
+  rm(MB,qa)
+  #Calculating TOA values for green and NIR layers only as they are the only ones needed to calculate NDWI
+  if(grepl(glob2rx("*L7"),FilePaths[j])==TRUE){
+    corr_GNIR=radCor(MB_noshadow,meta,method = 'apref',bandSet = c(2,4))
+  }else if(grepl(glob2rx("*L8"),FilePaths[j])==TRUE){
+    corr_GNIR=radCor(MB_noshadow,meta,method = 'apref',bandSet = c(3,5))}
+    ndwi=spectralIndices(corr_GNIR,green = 1, nir= 2,indices = "NDWI")
+  ndwi[ndwi<=0]=NA #water has an NDWI index >0, so any other values are transformed to 'NA'
+  rm(corr_GNIR)
+  # ndwi[ndwi>0]=1
+  # myfun=function(x) ifelse(x>0,1,NA)
+  # mask_ndwi=calc(x=ndwi,fun=myfun)
+  #Use NDWI index to mask any non-water areas
+  water=mask(MB_noshadow,ndwi)
+  rm(ndwi,MB_noshadow)
+  # water_TOA=overlay(MB_TOA,ndwi,fun=function(x,y){x*y})
+  #Calculate at-surface reflectance for all unmasked values in all layers
+  if(grepl(glob2rx("*L7"),FilePaths[j])==TRUE){
+    haze=estimateHaze(water,hazeBands = 1:3)
+    surfref_water=radCor(water,meta,method = 'sdos',hazeValues = haze, hazeBands = 1:3)
+    rm(haze)
+  }else if(grepl(glob2rx("*L8"),FilePaths[j])==TRUE){
+    haze=estimateHaze(water,hazeBands = 1:4)
+    surfref_water=radCor(water,meta,method = 'sdos',hazeValues = haze, hazeBands = 1:4)
+    rm(haze)}
+  rm(water)
+  writeRaster(surfref_water,filename = "surfref_Water.tif",options="INTERLEAVE=BAND", overwrite=T)
+  #Extract TOA values from all layers into river points
+  pts=extract(surfref_water,RioDoce)
+  rasValues=cbind(RioDoce,pts)
+  rm(surfref_water,pts)
+  projection(rasValues)="+init=epsg:32624" #set CRS to that of satellite images
+  write.table(rasValues,file="surfref_Water.csv",append=F,sep= ",",row.names=F,col.names=T) #Save .csv file
+  shapefile(rasValues, "surfref_Water.shp", overwrite = T)
+  setwd("../..") #Go back to main directory containing all files
+}
+
+# object.size(MB)
+# nlayers(MB)
+# plotRGB(MB,r=7,g=5,b=3) #plots multilayered raster in color. r=red, g=green, b=blue
+# plot(MB,1)
+# plot(new, 2, add=T)
+# new = read.csv("rasValues.csv")
+# hist(new$LE07_L1TP_216073_20170102_20170223_01_T1_B1)
