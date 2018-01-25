@@ -1,0 +1,97 @@
+#Clear all variables
+rm(list = ls())
+
+library(plyr)
+
+#Directory where all data you are working is located
+ParentPath="Y:/BHP - BHP Billiton/BHP1703 Acoustic Survey - Oct 2017/Data/Hydroacoustics/Reanalysis_Dec12"
+#Set directory to above path
+setwd(ParentPath)
+
+#Names of all site folders inside main working directory 
+Sites=c("Aimores","Baguari","Brecha","Candonga","Corrente","Dique S4","Fumaca","Itapina","Mascarenhas",
+        "Resplendor","Santo Antonio DS Porto Estrella")
+# Folders=c("Aimores","Baguari","Brecha","Candonga","Corrente","Dique S4","Fumaca","Itapina","Mascarenhas","PS",
+#           "Resplendor","SA DS PE")
+#Creating final directory path to files of interest
+# FilePath=paste0("./",Sites,rep("/",length(Sites)),Folders,rep(" 20logR",length(Sites)))
+FilePath=paste0("./",Sites)
+# temp=list.files(pattern = "_BiomassBasket_Bnr6.txt")
+# myfiles = do.call(rbind, lapply(temp, function(x) read.delim(x,header = T,skip = 4)))
+
+for(i in 1:length(Sites)){
+  setwd(FilePath[i])
+  temp=list.files(pattern = "_BiomassBasket_Bnr5.txt") #get a list of files with a particular ending
+  assign(Sites[i], do.call(rbind, lapply(temp, function(x) read.delim(x,header = T,skip = 4)))) #for each step, create
+  #a variable with the name Sites[i] (using assign()), read contents and bind them together
+  setwd("..") #go back two folders in directory -> setwd("../..") #to move back one folder -> setwd("..")
+}
+
+#Add a column where biomass is calculated in g/m^3 and another column with the site name
+datasets <- names(which(sapply(.GlobalEnv, is.data.frame))) #get all the names of dataframes in the global environment
+for(i in seq_along(datasets)) {
+  x <- get(datasets[i])
+  for(j in 1:nrow(x))
+  {
+    x$Biomass_gm3[[j]] = (x$Biomass..gram.m2..total[[j]] / x$Average.range..m..rel[[j]])
+    x$Sites = datasets[i]
+  }
+  assign(datasets[i], x)
+}
+
+#Extract the variables of interest into new variables ending in "_short"
+for(i in seq_along(datasets)) {
+  x <- get(datasets[i])
+  for(j in 1:length(x))
+  {
+    y= subset(x,select=c(2,3,16,22,25,34,64,65))
+  }
+  assign(paste0(datasets[i],rep("_short")), y)
+}
+
+#Put all dataframes in a list ready for export as .csv files
+list_df=mget(datasets)
+list2_df=mget(paste0(datasets,"_short"))
+#Export all files in the newly created list
+lapply(seq_along(list2_df),
+       function(i) write.table(list2_df[[i]],paste0(names(list2_df)[i], ".csv"),row.names = FALSE, quote = TRUE,
+                               sep = ";", dec = "."))
+#Export all files in the newly created list
+lapply(seq_along(list_df),
+       function(i) write.table(list_df[[i]],paste0(names(list_df)[i], ".csv"),row.names = FALSE, quote = TRUE,
+                               sep = ";", dec = "."))
+
+#Bind together all "short" dataframes for stats processing
+ALL=do.call("rbind",list2_df)
+# write.csv(ALL,"AllSites.csv") #Export stats file
+
+#Calculate mean and SD for depth and Biomass
+stats_ALL=ddply(ALL,.(Sites),summarize,Ave_depth=mean(Average.range..m..rel..tr.,na.rm = T),
+                SD_depth=sd(Average.range..m..rel..tr.,na.rm = T),Ave_Bio_gm3=mean(Biomass_gm3,na.rm = T),
+                SD_Bio_gm3=sd(Biomass_gm3,na.rm = T))
+write.csv(stats_ALL,"stats.csv") #Export stats file
+
+
+
+# Examples of things that did not work, but may become handy in the future.
+# filenames=lapply(mget(SitesALL), transform, Biomass_gm3=Biomass..gram.m2..total/Average.range..m..rel..tr.)
+# 
+# SitesALL=Sites[-10]
+# list_df=mget(Sites[-10])
+# list_df=mapply(cbind,list_df,"Biomass_gm3")
+#  
+# for(i in 1:length(list_df)){
+#   assign(paste0(Sites[i],rep("short")),subset(list_df[[i]],select=c(2,3,16,22,25,34)))}
+# for(i in 1:length(list_df)){
+#   assign(paste0(SitesALL[i],rep("corrected")),lapply(mget(SitesALL), transform, Biomass_gm3=Biomass..gram.m2..total/
+#                                                     Average.range..m..rel..tr.))}
+# filenames=lapply(mget(SitesALL), transform, Biomass_gm3=Biomass..gram.m2..total/Average.range..m..rel..tr.)
+#  
+# for(i in 1:length(list_df)){
+#   assign(paste0(Sites[i],rep("corrected")),lapply(list_df, function(x) read.delim(x,header = T,skip = 4)))}
+# 
+# lapply(seq_along(list_df),
+#        function(i) write.table(list_df[[i]],paste0(names(list_df)[i], ".csv"),row.names = FALSE, quote = TRUE,
+# 
+# filenames <- names(which(sapply(.GlobalEnv, is.data.frame)))
+# filenames = lapply(filenames, function (data) within(data, interval = Upperbound - Lowerbound))
