@@ -1,0 +1,314 @@
+#You must open and run DistanceToLine script located here: C:\Users\Sahira\Documents\R scripts before running 
+#the code to calculate distances
+
+#Clear all variables
+rm(list = ls())
+
+#Set working directory - where all data you are working is located
+setwd("Y:/APL - Aust Potash Limited/APL1701 Lake Wells GDE/GIS/NDVI and NDWI")
+
+#Upload data
+Values=read.csv("NDVI_NDWImeans.csv")
+years=unique(Values$Date)
+
+#Extract mean NDVI values
+NDVI_ALL=matrix(unlist(t(Values$NDVI.mean)),byrow = T,15,18)
+rownames(NDVI_ALL)=years
+colnames(NDVI_ALL)=paste(unique(Values$JIM_VEG))
+NDVI_ALL=t(NDVI_ALL)
+#Extract mean NDVI values per year
+NDVI_06=NDVI_ALL[,1:8]
+NDVI_08=NDVI_ALL[,9:15]
+#Plot NDVI values per year
+#2006
+par(mar=c(6, 3, 3, 10),xpd=T)
+plot(NDVI_06[1,],type="n",ylab="",ylim=c(min(NDVI_ALL),round(max(NDVI_ALL),1)),xlab = "",xaxt="n",cex.axis=0.8,
+     cex.lab=0.8)
+axis(1,at=1:dim(NDVI_06)[2],labels = colnames(NDVI_06),las=2,cex.axis=0.8)
+mtext("NDVI", cex=0.8,side=2,line=2)
+for(i in 1:dim(NDVI_06)[1]){
+  lines(as.numeric(paste(NDVI_06[i,])),col=i,lty=i,pch=i,type = "o")}
+legend("topright",legend=c(paste(unique(Values$JIM_VEG))),cex=0.7,col=c(1:nrow(NDVI_06)),lty=c(1:nrow(NDVI_06)),
+       inset=c(-0.25,0),pch = c(1:nrow(NDVI_06)),title="Floristic communities",bty="n")
+#2008
+plot(NDVI_08[1,],type="n",ylab = "",ylim=c(min(NDVI_ALL),round(max(NDVI_ALL),1)),xlab = "",xaxt="n",cex.axis=0.8,
+     cex.lab=0.8)
+axis(1,at=1:dim(NDVI_08)[2],labels = colnames(NDVI_08),las=2,cex.axis=0.8)
+mtext("NDVI", cex=0.8,side=2,line=2)
+for(i in 1:dim(NDVI_08)[1]){
+  lines(as.numeric(paste(NDVI_08[i,])),col=i,lty=i,pch=i,type = "o")}
+legend("topright",legend=c(paste(unique(Values$JIM_VEG))),cex=0.7,col=c(1:nrow(NDVI_08)),lty=c(1:nrow(NDVI_08)),
+       inset=c(-0.25,0),pch = c(1:nrow(NDVI_08)),title="Floristic communities",bty="n")
+
+#Extract data for wet and dry seasons - Based on highest and lowest NDVI values per year
+NDVI_Wet06=Values[(which(Values$Date=="21-04-06")),]
+NDVI_Dry06=Values[(which(Values$Date=="30-10-06")),]
+NDVI_Wet08=Values[(which(Values$Date=="09-03-08")),]
+NDVI_Dry08=Values[(which(Values$Date=="03-10-08")),]
+#Creating polygons surrounding data points per year
+# z06=chull(NDVI_Wet06$NDVI.mean,NDVI_Dry06$NDVI.mean)
+# dfHull06=cbind(NDVI_Wet06$NDVI.mean[z06],NDVI_Dry06$NDVI.mean[z06])
+# z08=chull(NDVI_Wet08$NDVI.mean,NDVI_Dry08$NDVI.mean)
+# dfHull08=cbind(NDVI_Wet08$NDVI.mean[z08],NDVI_Dry08$NDVI.mean[z08])
+#Plot ratios
+par(mar=c(5.1, 4.1, 4.1, 2.1),xpd=F)
+plot(NDVI_Wet06$NDVI.mean,NDVI_Dry06$NDVI.mean,xlim = c(-0.1,0.25),ylim = c(-0.1,0.25),
+     xlab = "Max late wet season NDVI",ylab = "End of dry season NDVI",pch=c(1:nrow(NDVI_Dry06)),
+     col=c(1:length(NDVI_Dry06$Date)))
+points(NDVI_Wet08$NDVI.mean,NDVI_Dry08$NDVI.mean,xlim = c(-0.1,0.25),
+       pch=c(1:nrow(NDVI_Dry06)),col=c(1:nrow(NDVI_Dry06)))
+abline(0, 1)
+# lines(dfHull06,col="blue",lty=2)
+# lines(dfHull08,col="red",lty=2)
+legend("topleft",legend=c(paste(NDVI_Dry06$JIM_VEG)),cex=0.7,pch=c(1:nrow(NDVI_Dry06)),
+       col=c(1:nrow(NDVI_Dry06)),bty="n",title = "Floristic communities")
+
+#Calculating distances to linear relationship
+#Open and run DistanceToLine script located here: C:\Users\Sahira\Documents\R scripts before running the code below
+#Coefficients of linear relationship
+cfs <- c(0,1)
+#Create data frame where distances will be recorded
+dist=data.frame(communities=unique(NDVI_Dry06$JIM_VEG),dist06=0,dist08=0)
+#Loop through all data point 
+for(i in 1:length(NDVI_Dry06$NDVI.mean)){
+  dist$dist06[i]=distancePointLine(y=NDVI_Dry06$NDVI.mean[i], x=NDVI_Wet06$NDVI.mean[i], slope=cfs[2], intercept=cfs[1])
+  dist$dist08[i]=distancePointLine(y=NDVI_Dry08$NDVI.mean[i], x=NDVI_Wet08$NDVI.mean[i], slope=cfs[2], intercept=cfs[1])
+}
+#Order points by distance (smaller to larger numbers)
+dist06=dist[with(dist,order(dist06)),]
+dist08=dist[with(dist,order(dist08)),]
+par(mar=c(8, 5, 3, 1))
+barplot(dist06$dist06,names.arg = paste(dist06$communities),las=2,cex.names=0.7,ylim = c(0,0.1),
+        ylab="Distance (relative units)")
+mtext("Floristic communities", side=1,line=6)
+box()
+barplot(dist08$dist08,names.arg = paste(dist08$communities),las=2,cex.names=0.7,ylim = c(0,0.1),
+        ylab="Distance (relative units)")
+mtext("Floristic communities", side=1,line=6)
+box()
+
+
+#Extract mean NDWI values
+NDWI_ALL=matrix(unlist(t(Values$NDWI.mean)),byrow = T,15,18)
+rownames(NDWI_ALL)=years
+colnames(NDWI_ALL)=paste(unique(Values$JIM_VEG))
+NDWI_ALL=t(NDWI_ALL)
+#Extract mean NDVI values per year
+NDWI_06=NDWI_ALL[,1:8]
+NDWI_08=NDWI_ALL[,9:15]
+#Plot NDVI values per year
+#2006
+par(mar=c(6, 3, 3, 10),xpd=T)
+plot(NDWI_06[1,],type="n",ylab="",ylim=c(min(NDWI_ALL),round(max(NDWI_ALL),2)),xlab = "",xaxt="n",cex.axis=0.8,
+     cex.lab=0.8)
+axis(1,at=1:dim(NDWI_06)[2],labels = colnames(NDWI_06),las=2,cex.axis=0.8)
+mtext("NDWI", cex=0.8,side=2,line=2)
+for(i in 1:dim(NDWI_06)[1]){
+  lines(as.numeric(paste(NDWI_06[i,])),col=i,lty=i,pch=i,type = "o")}
+legend("topright",legend=c(paste(unique(Values$JIM_VEG))),cex=0.7,col=c(1:nrow(NDWI_06)),lty=c(1:nrow(NDWI_06)),
+       inset=c(-0.25,0),pch = c(1:nrow(NDWI_06)),title="Floristic communities",bty="n")
+#2008
+plot(NDWI_08[1,],type="n",ylab = "",ylim=c(min(NDWI_ALL),round(max(NDWI_ALL),2)),xlab = "",xaxt="n",cex.axis=0.8,
+     cex.lab=0.8)
+axis(1,at=1:dim(NDWI_08)[2],labels = colnames(NDWI_08),las=2,cex.axis=0.8)
+mtext("NDWI", cex=0.8,side=2,line=2)
+for(i in 1:dim(NDWI_08)[1]){
+  lines(as.numeric(paste(NDWI_08[i,])),col=i,lty=i,pch=i,type = "o")}
+legend("topright",legend=c(paste(unique(Values$JIM_VEG))),cex=0.7,col=c(1:nrow(NDWI_08)),lty=c(1:nrow(NDWI_08)),
+       inset=c(-0.25,0),pch = c(1:nrow(NDWI_08)),title="Floristic communities",bty="n")
+
+#Extract data for wet and dry seasons - Based on highest and lowest NDVI values per year
+NDWI_Wet06=Values[(which(Values$Date=="21-04-06")),]
+NDWI_Dry06=Values[(which(Values$Date=="30-10-06")),]
+NDWI_Wet08=Values[(which(Values$Date=="09-03-08")),]
+NDWI_Dry08=Values[(which(Values$Date=="03-10-08")),]
+#Creating polygons surrounding data points per year
+# z06=chull(NDWI_Wet06$NDWI.mean,NDWI_Dry06$NDWI.mean)
+# dfHull06=cbind(NDWI_Wet06$NDWI.mean[z06],NDWI_Dry06$NDWI.mean[z06])
+# z08=chull(NDWI_Wet08$NDWI.mean,NDWI_Dry08$NDWI.mean)
+# dfHull08=cbind(NDWI_Wet08$NDWI.mean[z08],NDWI_Dry08$NDWI.mean[z08])
+#Plot ratios
+par(mar=c(5.1, 4.1, 4.1, 2.1),xpd=F)
+plot(NDWI_Wet06$NDWI.mean,NDWI_Dry06$NDWI.mean,xlim = c(-0.5,0),ylim = c(-0.5,0),
+     xlab = "Max late wet season NDWI",ylab = "End of dry season NDWI",pch=c(1:nrow(NDWI_Dry06)),
+     col=c(1:nrow(NDWI_Dry06)))
+points(NDWI_Wet08$NDWI.mean,NDWI_Dry08$NDWI.mean,pch=c(1:nrow(NDWI_Dry06)),col=c(1:nrow(NDWI_Dry06)))
+abline(0, 1)
+# lines(dfHull06,col="blue",lty=2)
+# lines(dfHull08,col="red",lty=2)
+legend("topleft",legend=c(paste(unique(Values$JIM_VEG))),cex=0.7,pch=c(1:nrow(NDWI_Dry06)),col=c(1:nrow(NDWI_Dry06)),
+       bty="n",title="Floristic communities")
+
+#Calculating distances to linear relationship
+#Open and run DistanceToLine script located here: C:\Users\Sahira\Documents\R scripts before running the code below
+#Coefficients of linear relationship
+cfs <- c(0,1)
+#Create data frame where distances will be recorded
+dist=data.frame(communities=unique(NDWI_Dry06$JIM_VEG),dist06=0,dist08=0)
+#Loop through all data point 
+for(i in 1:length(NDWI_Dry06$NDWI.mean)){
+  dist$dist06[i]=distancePointLine(y=NDWI_Dry06$NDWI.mean[i], x=NDWI_Wet06$NDWI.mean[i], slope=cfs[2], intercept=cfs[1])
+  dist$dist08[i]=distancePointLine(y=NDWI_Dry08$NDWI.mean[i], x=NDWI_Wet08$NDWI.mean[i], slope=cfs[2], intercept=cfs[1])
+}
+#Order points by distance (smaller to larger numbers)
+dist06=dist[with(dist,order(dist06)),]
+dist08=dist[with(dist,order(dist08)),]
+par(mar=c(8, 5, 3, 1))
+barplot(dist06$dist06,names.arg = paste(dist06$communities),las=2,cex.names=0.7,ylim = c(0,0.08),
+        ylab="Distance (relative units)")
+mtext("Floristic communities", side=1,line=6)
+box()
+barplot(dist08$dist08,names.arg = paste(dist08$communities),las=2,cex.names=0.7,ylim = c(0,0.08),
+        ylab="Distance (relative units)")
+mtext("Floristic communities", side=1,line=6)
+box()
+
+
+#ET analysis
+#Upload data
+ETValues=read.csv("ETmeans.csv")
+dates=unique(ETValues$Date)
+
+#Extract values
+ET_ALL=matrix(unlist(t(ETValues$X_mean)),byrow = T,20,18)
+rownames(ET_ALL)=dates
+colnames(ET_ALL)=paste(unique(ETValues$JIM_VEG))
+ET_ALL=t(ET_ALL)
+#Extract mean ET values per year
+ET_06=ET_ALL[,1:9]
+ET_08=ET_ALL[,10:20]
+#Calculating number of days between dates
+dates=data.frame(days=0)
+dates=transform(dates,date=sapply(unique(ETValues$Date),paste0))
+dates06=dates[1:9,]
+for (i in 2:nrow(dates06)) {
+    dates06$days[i]=as.Date(dates06$date[i],format='%d-%m-%y')-as.Date(dates06$date[i-1],format='%d-%m-%y')
+}
+dates08=dates[10:20,]
+for (i in 2:nrow(dates08)) {
+  dates08$days[i]=as.Date(dates08$date[i],format='%d-%m-%y')-as.Date(dates08$date[i-1],format='%d-%m-%y')
+}
+#Calculating cumulative ET values per year
+#2006
+cumET_06=matrix(0,nrow=nrow(ET_06),ncol=ncol(ET_06))
+cumET_06[,1]=ET_06[,1]
+for(i in 1:nrow(cumET_06)){
+  for(j in 2:ncol(cumET_06)){
+    cumET_06[i,j]=(ET_06[i,j]*dates06$days[j])+cumET_06[i,j-1]
+  }
+}
+#2008
+cumET_08=matrix(0,nrow=nrow(ET_08),ncol=ncol(ET_08))
+cumET_08[,1]=ET_08[,1]
+for(i in 1:nrow(cumET_08)){
+  for(j in 2:ncol(cumET_08)){
+    cumET_08[i,j]=(ET_08[i,j]*dates08$days[j])+cumET_08[i,j-1]
+  }
+}
+#Plot ET values per year
+#2006
+par(mar=c(6, 5, 3, 10),xpd=T)
+plot(cumET_06[1,],type="n",ylab="",ylim=c(0,600),xlab="",xaxt="n",cex.axis=0.8,cex.lab=0.8)
+axis(1,at=1:ncol(ET_06),labels = colnames(ET_06),las=2,cex.axis=0.8)
+mtext("Cumulative ET (mm)", cex=0.8,side=2,line=3)
+for(i in 1:nrow(cumET_06)){
+  lines(sort(cumET_06[i,]),col=i,lty=i,pch=i,type = "o")}
+legend("topright",legend=c(paste(unique(ETValues$JIM_VEG))),cex=0.7,col=c(1:nrow(ET_06)),lty=c(1:nrow(ET_06)),
+       inset=c(-0.25,0),pch = c(1:nrow(ET_06)),title="Floristic communities",bty="n")
+
+#2008
+plot(cumET_08[1,],type="n",ylab = "",ylim=c(0,600),xlab = "",xaxt="n",cex.axis=0.8,cex.lab=0.8)
+axis(1,at=1:ncol(ET_08),labels = colnames(ET_08),las=2,cex.axis=0.8)
+mtext("Cumulative ET (mm)", cex=0.8,side=2,line=3)
+for(i in 1:nrow(cumET_08)){
+  lines(sort(cumET_08[i,]),col=i,lty=i,pch=i,type = "o")}
+legend("topright",legend=c(paste(unique(ETValues$JIM_VEG))),cex=0.7,col=c(1:nrow(ET_08)),lty=c(1:nrow(ET_08)),
+       inset=c(-0.25,0),pch = c(1:nrow(ET_08)),title="Floristic communities",bty="n")
+
+#ETg calculations
+#Total annual rainfall Laverton 2006 (mm)
+RF_Lav06 = 337.6
+#Total annual rainfall Laverton 2008 (mm)
+RF_Lav08 = 191.4
+
+#Extracting NDVI median values for October 2006
+NDVImed06=Values[(which(Values$Date=="30-10-06")),]
+NDVIm06=max(NDVImed06$NDVI.median)
+NDVIz06=-0.032967
+NDVImed08=Values[(which(Values$Date=="03-10-08")),]
+NDVIm08=max(NDVImed08$NDVI.median)
+NDVIz08=-0.036364
+NDVI06norm=0
+NDVI08norm=0
+
+#NDVI* calculations
+#2006
+for(i in  1:nrow(NDVI_06)){
+  NDVI06norm[i]=(NDVImed06$NDVI.median[i]-NDVIz06)/(NDVIm06-NDVIz06)
+}
+#2008
+for(i in  1:nrow(NDVI_08)){
+  NDVI08norm[i]=(NDVImed08$NDVI.median[i]-NDVIz08)/(NDVIm08-NDVIz08)
+}
+
+#ETg values
+#2006
+ETg06=data.frame(ETg=0)
+for(i in 1:nrow(ET_06)){
+  ETg06[i,]=(cumET_06[i,ncol(cumET_06)]-RF_Lav06)*NDVI06norm[i]
+}
+ETg06=transform(ETg06,sites=sapply(NDVImed06$JIM_VEG,paste0))
+ETg06=ETg06[with(ETg06,order(ETg)),]
+#Plotting ETg values
+par(mar=c(8, 4.5, 3, 1))
+barplot(ETg06$ETg,names.arg = ETg06$sites,las=2,ylim=c(-100,50),cex.names=0.7,cex.axis = 0.8,
+        ylab="ETg (mm/year)")
+box()
+#2008
+ETg08=data.frame(ETg=0)
+for(i in 1:nrow(ET_08)){
+  ETg08[i,]=(sum(ET_08[i,])-RF_Lav08)*NDVI08norm[i]
+}
+ETg08=transform(ETg08,sites=sapply(NDVImed08$JIM_VEG,paste0))
+ETg08=ETg08[with(ETg08,order(ETg)),]
+#Plotting ETg values
+par(mar=c(8, 4.5, 3, 1))
+barplot(ETg08$ETg,names.arg = ETg08$sites,las=2,ylim=c(-200,100),cex.names=0.7,cex.axis = 0.8,
+        ylab="ETg (mm/year)")
+box()
+
+#Calculating pIDE
+#2006
+pIDE06=data.frame(values=(cumET_06[,ncol(cumET_06)]/RF_Lav06))
+pIDE06$pIDE=0
+for(i in 1:nrow(pIDE06)){
+  if(pIDE06$values[i]<0.5){pIDE06$pIDE[i]=0
+  }else if(pIDE06$values[i]>=0.5 && pIDE06$values[i]<=0.79){pIDE06$pIDE[i]=10
+  }else if(pIDE06$values[i]>0.79 && pIDE06$values[i]<=0.9){pIDE06$pIDE[i]=20
+  }else if(pIDE06$values[i]>0.9 && pIDE06$values[i]<=0.95){pIDE06$pIDE[i]=30
+  }else if(pIDE06$values[i]>0.95 && pIDE06$values[i]<=0.99){pIDE06$pIDE[i]=40
+  }else if(pIDE06$values[i]>0.99 && pIDE06$values[i]<=1.04){pIDE06$pIDE[i]=50
+  }else if(pIDE06$values[i]>1.04 && pIDE06$values[i]<=1.10){pIDE06$pIDE[i]=60
+  }else if(pIDE06$values[i]>1.10 && pIDE06$values[i]<=1.17){pIDE06$pIDE[i]=70
+  }else if(pIDE06$values[i]>1.17 && pIDE06$values[i]<=1.22){pIDE06$pIDE[i]=80
+  }else if(pIDE06$values[i]>1.22 && pIDE06$values[i]<=1.38){pIDE06$pIDE[i]=90
+  }else if(pIDE06$values[i]>1.38 && pIDE06$values[i]<=3.14){pIDE06$pIDE[i]=100}
+}
+write.csv(pIDE06,file = "pIDE2006.csv")
+#2008
+pIDE08=data.frame(values=(cumET_08[,ncol(cumET_08)]/RF_Lav08))
+pIDE08$pIDE=0
+for(i in 1:nrow(pIDE08)){
+  if(pIDE08$values[i]<0.5){pIDE08$pIDE[i]=0
+  }else if(pIDE08$values[i]>=0.5 && pIDE08$values[i]<=0.79){pIDE08$pIDE[i]=10
+  }else if(pIDE08$values[i]>0.79 && pIDE08$values[i]<=0.9){pIDE08$pIDE[i]=20
+  }else if(pIDE08$values[i]>0.9 && pIDE08$values[i]<=0.95){pIDE08$pIDE[i]=30
+  }else if(pIDE08$values[i]>0.95 && pIDE08$values[i]<=0.99){pIDE08$pIDE[i]=40
+  }else if(pIDE08$values[i]>0.99 && pIDE08$values[i]<=1.04){pIDE08$pIDE[i]=50
+  }else if(pIDE08$values[i]>1.04 && pIDE08$values[i]<=1.10){pIDE08$pIDE[i]=60
+  }else if(pIDE08$values[i]>1.10 && pIDE08$values[i]<=1.17){pIDE08$pIDE[i]=70
+  }else if(pIDE08$values[i]>1.17 && pIDE08$values[i]<=1.22){pIDE08$pIDE[i]=80
+  }else if(pIDE08$values[i]>1.22 && pIDE08$values[i]<=1.38){pIDE08$pIDE[i]=90
+  }else if(pIDE08$values[i]>1.38 && pIDE08$values[i]<=3.14){pIDE08$pIDE[i]=100}
+}
+write.csv(pIDE08,file = "pIDE2008.csv")
