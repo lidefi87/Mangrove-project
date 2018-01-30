@@ -1,0 +1,203 @@
+#Clear all variables
+rm(list = ls())
+
+library(dplyr)
+library(tidyr)
+library(lubridate)
+
+#Set directory to location of data
+setwd("Y:/DEN - DENR NT govt/DEN1701 Ecoregional Data/GIS/Denisse")
+
+#Upload files
+EditedData=read.csv("DEN1701 Timor Sea_data.csv")
+GISTable=read.csv("WQ Combined.csv")
+
+#Replace NA values with blank spaces to start merging columns with similar data
+EditedData[is.na(EditedData)]=""
+#Merge similar columns
+#Site ID
+EditedData=unite(EditedData,SiteID,Set_ID,Station,Sitecode,sep="")
+#Site Name
+EditedData=unite(EditedData,SiteName,SITE_NAME,Site_ID,Stname,sep = "")
+#Temperature
+EditedData=transform(EditedData,Temperature.deg.C=as.numeric(Temperature.deg.C))
+EditedData$Temp_C=rowSums(EditedData[,c(grep("Temp",colnames(EditedData)))],na.rm = T)
+EditedData=EditedData[,-c(52,59,159)]
+#Deleting columns with same info
+#ANAE categories
+EditedData=EditedData[,-c(10,11,14)]
+#Latitude and Longitude values
+EditedData=EditedData[,-c(35,36,46,47,130,131)]
+#Area
+EditedData=EditedData[,-c(235)]
+#pH
+EditedData=transform(EditedData,pH=as.numeric(pH))
+EditedData=transform(EditedData,pH.field.measure.Units=as.numeric(pH.field.measure.Units))
+EditedData$pH.=rowSums(EditedData[,c(grep("pH",colnames(EditedData)))],na.rm = T)
+for(i in 1:nrow(EditedData)){
+  if(EditedData$pH.[i]>10){
+    EditedData$pH.[i]=EditedData$pH.[i]/2
+  }}
+EditedData=EditedData[,-c(50,85,138)]
+#Updating month column
+for(i in 1:nrow(EditedData)){
+  if(EditedData$month[i]==0){EditedData$month[i]=month(dmy(EditedData$Date[i]))}
+}
+#Data source
+EditedData=unite(EditedData,DataSource,HB.Data.Source,DataSource,sep = " ")
+#Date Time merge
+EditedData$Date=format(as.POSIXct(EditedData$Date,format='%d/%m/%y %H:%M'),format='%d/%m/%y')
+EditedData=unite(EditedData,DateTime,Date,Time,sep=" ")
+#Notes merge
+EditedData=unite(EditedData,Notes,Notes,Notes.after.Kennard.added,sep=" ")
+#Mean_R_Width and Width126 merge
+EditedData$MeanRWidth=rowSums(EditedData[,c(grep("width",tolower(colnames(EditedData))))],na.rm = T)
+EditedData=EditedData[,-c(128,163)]
+#Depth
+EditedData=EditedData[,-c(132)]
+EditedData=transform(EditedData,Depth_m=as.numeric(Depth_m))
+EditedData$DepthM=rowSums(EditedData[,c(43,168)],na.rm = T)
+EditedData=EditedData[,-c(43,168)]
+#Turbidity
+levels(EditedData$Turbidity..NTU.)=c(levels(EditedData$Turbidity..NTU.),1000)
+for(i in 1:nrow(EditedData)){
+  if(EditedData$Turbidity..NTU.[i]==">1000"){
+    EditedData$Turbidity..NTU.[i]=1000}
+  else if(EditedData$Turbidity..NTU.[i]==""){
+    EditedData$Turbidity..NTU.[i]=NA
+  }}
+EditedData=transform(EditedData,Turbidity..NTU.=as.numeric(Turbidity..NTU.))
+EditedData$TurbidityNTU=rowSums(EditedData[,c(45,131)],na.rm = T)
+EditedData=EditedData[,-c(45,131)]
+#Nitrate as N NO3
+EditedData$Nitrate.as.N..Low.DL..mg.L[which(EditedData$Nitrate.as.N..Low.DL..mg.L=="")]=NA
+EditedData=transform(EditedData,Nitrate.as.N..Low.DL..mg.L=as.numeric(Nitrate.as.N..Low.DL..mg.L))
+for(i in 1:nrow(EditedData)){
+  if(EditedData$COMBINEDNitrateN_NO3mgL[i]==0){
+    EditedData$COMBINEDNitrateN_NO3mgL[i]=sum(EditedData$Nitrate.as.N..Low.DL..mg.L[i],
+                                              EditedData$Nitrate..as.NO3...DL.1mg.mg.L[i],na.rm = T)}}
+EditedData=EditedData[,-c(53,80)]
+#Alkalinity
+for(i in 1:nrow(EditedData)){
+  if(EditedData$ALKALINITY_mgL[i]==0){
+    EditedData$ALKALINITY_mgL[i]=EditedData$Alkalinity...Total.mg.L[i]}}
+EditedData=EditedData[,-c(72)]
+#Hardness as CaCO3
+EditedData$Hardness.total..calc..mg.L[which(EditedData$Hardness.total..calc..mg.L=="")]=NA
+EditedData=transform(EditedData,Hardness.total..calc..mg.L=as.numeric(Hardness.total..calc..mg.L))
+for(i in 1:nrow(EditedData)){
+  if(EditedData$HardnessCaCO3COMBINED[i]==0){
+    EditedData$HardnessCaCO3COMBINED[i]=sum(EditedData$Hardness.total..calc..mg.L[i],
+                                            EditedData$Hardness.total..titr..mg.L[i],na.rm = T)}}
+EditedData=EditedData[,-c(74,75)]
+#Potassium
+for(i in 1:nrow(EditedData)){
+  if(EditedData$KtotmgL[i]==0){
+    EditedData$KtotmgL[i]=EditedData$Potassium.mg.L[i]}}
+EditedData=EditedData[,-c(76)]
+#Magnesium
+for(i in 1:nrow(EditedData)){
+  if(EditedData$MgmgL[i]==0){
+    EditedData$MgmgL[i]=EditedData$Magnesium...soluble.mg.L[i]}}
+EditedData=EditedData[,-c(75)]
+#Sodium
+for(i in 1:nrow(EditedData)){
+  if(EditedData$NamgL[i]==0){
+    EditedData$NamgL[i]=EditedData$Sodium.mg.L[i]}}
+EditedData=EditedData[,-c(13)]
+#Dissolved oxygen
+#DOmgL
+EditedData$Dissolved.oxygen..mg.L..mg.L[which(EditedData$Dissolved.oxygen..mg.L..mg.L=="")]=NA
+EditedData=transform(EditedData,Dissolved.oxygen..mg.L..mg.L=as.numeric(Dissolved.oxygen..mg.L..mg.L))
+for(i in 1:nrow(EditedData)){
+  if(EditedData$DO[i]==0){
+    EditedData$DO[i]=sum(EditedData$DOmgL[i],EditedData$Dissolved.oxygen..mg.L..mg.L[i],na.rm = T)}}
+EditedData=EditedData[,-c(45,130)]
+#DO%
+EditedData$Dissolved.oxygen....[which(EditedData$Dissolved.oxygen....=="")]=NA
+EditedData=transform(EditedData,Dissolved.oxygen....=as.numeric(Dissolved.oxygen....))
+for(i in 1:nrow(EditedData)){
+  if(EditedData$DO.[i]==0){
+    EditedData$DO.[i]=EditedData$Dissolved.oxygen....[i]}}
+EditedData=EditedData[,-c(44)]
+#Silica
+EditedData$SiO2_T1814[which(EditedData$SiO2_T1814=="")]=NA
+EditedData=transform(EditedData,SiO2_T1814=as.numeric(SiO2_T1814))
+for(i in 1:nrow(EditedData)){
+  if(EditedData$Silica...total.mg.L[i]==0){
+    EditedData$Silica...total.mg.L[i]=EditedData$SiO2_T1814[i]}}
+EditedData=EditedData[,-c(136)]
+#Nitrogen
+EditedData$Nitrogen...Total.Kheldahl.mg.L[which(EditedData$Nitrogen...Total.Kheldahl.mg.L=="")]=NA
+EditedData$Nitrogen...Total.mg.L[which(EditedData$Nitrogen...Total.mg.L=="")]=NA
+EditedData$Nitrogen...Total.Kheldahl.mg.L1[which(EditedData$Nitrogen...Total.Kheldahl.mg.L1=="")]=NA
+EditedData$Nitrogen_Total_calc..mg.L..mg.L[which(EditedData$Nitrogen_Total_calc..mg.L..mg.L=="")]=NA
+EditedData$TotalN0302[which(EditedData$TotalN0302=="")]=NA
+EditedData$TotalNmgL[which(EditedData$TotalNmgL==0)]=NA
+EditedData=transform(EditedData,Nitrogen...Total.Kheldahl.mg.L=as.numeric(Nitrogen...Total.Kheldahl.mg.L),
+            Nitrogen...Total.mg.L=as.numeric(Nitrogen...Total.mg.L),
+            Nitrogen...Total.Kheldahl.mg.L1=as.numeric(Nitrogen...Total.Kheldahl.mg.L1),
+            Nitrogen_Total_calc..mg.L..mg.L=as.numeric(Nitrogen_Total_calc..mg.L..mg.L),
+            TotalN0302=as.numeric(TotalN0302))
+x=data.frame(EditedData[,c(58,93:95,128,133)])
+x$NTotalmgl=rowMeans(x,na.rm = T)
+EditedData$TotalNmgL=x$NTotalmgl
+EditedData=EditedData[,-c(58,93:95,133)]
+rm(x)
+#Phosphorus
+EditedData$Phosphorus...Total.mg.L[which(EditedData$Phosphorus...Total.mg.L=="")]=NA
+EditedData$Phosphorus...Total.mg.L1[which(EditedData$Phosphorus...Total.mg.L1=="")]=NA
+EditedData=transform(EditedData,Phosphorus...Total.mg.L=as.numeric(Phosphorus...Total.mg.L),
+                     Phosphorus...Total.mg.L1=as.numeric(Phosphorus...Total.mg.L1))
+for(i in 1:nrow(EditedData)){
+  if(EditedData$TotalPmgL[i]==0){
+    EditedData$TotalPmgL[i]=sum(EditedData$Phosphorus...Total.mg.L[i],EditedData$Phosphorus...Total.mg.L1[i],
+                                na.rm = T)}}
+EditedData=EditedData[,-c(58,92)]
+
+#Create new dataframe with desired columns
+columns=read.csv("colnames.csv")
+newTable=data.frame(matrix(0,ncol=ncol(columns),nrow=nrow(EditedData)))
+colnames(newTable)=colnames(columns)
+#Transfer values to new dataframe
+for(i in 1:ncol(newTable)){
+  for(j in 1:ncol(EditedData)){
+    if(colnames(newTable)[i]==colnames(EditedData)[j]){
+      newTable[,i]=EditedData[,j]
+    }
+  }
+}
+#Adding salinity classification
+newTable$Salinity_TDS_mg.L..x0.67.[which(newTable$Salinity_TDS_mg.L..x0.67.=="")]=NA
+newTable=transform(newTable,Salinity_TDS_mg.L..x0.67.=as.numeric(Salinity_TDS_mg.L..x0.67.))
+for(i in 1:nrow(newTable)){
+  if(is.na(newTable$Salinity_TDS_mg.L..x0.67.[i])==T){newTable$Salinity_Radke.2003.[i]=NA}
+  else if(newTable$Salinity_TDS_mg.L..x0.67.[i]<1000){newTable$Salinity_Radke.2003.[i]="Fresh"}
+  else if(newTable$Salinity_TDS_mg.L..x0.67.[i]>1000 && newTable$Salinity_TDS_mg.L..x0.67.[i]<3000){
+    newTable$Salinity_Radke.2003.[i]="Brackish"}
+  else if(newTable$Salinity_TDS_mg.L..x0.67.[i]>3000){newTable$Salinity_Radke.2003.[i]="Saline"}
+}
+
+x=data.frame(Salinity=newTable$Salinity_TDS_mg.L..x0.67.,SalClass=newTable$Salinity_Radke.2003.)
+for(i in 1:nrow(x)){
+  if(is.na(x$Salinity[i])==T){x$SalClass[i]=NA}
+  else if(x$Salinity[i]<1000){x$SalClass[i]="Fresh"}
+  else if(x$Salinity[i]>1000 && x$Salinity[i]<3000){x$SalClass[i]="Brackish"}
+  else if(x$Salinity[i]>3000){x$SalClass[i]="Saline"}
+  }
+
+write.csv(newTable,file = "cleanTimorSea.csv")
+
+# #Useful code to test actions in subset of dataset
+# x=data.frame(EditedData[,c(grep("DO",colnames(EditedData)),grep("oxy",tolower(colnames(EditedData))))])
+# x=data.frame(EditedData[,c(58,93:95,128,133)])
+# x=rowSums(EditedData[,c(grep("al",tolower(colnames(EditedData))))],na.rm = T)
+# x=unite(x,Notes,Notes,NotesEd,sep=" ")
+# x=rowSums(EditedData[,c(40,165)],na.rm = T)
+# 
+#Find columns by name in a data frame (not case sensitive)
+# grep("sali",tolower(colnames(EditedData)))
+# colnames(EditedData[c(grep("sali",tolower(colnames(EditedData))))])
+# #Find columns by name in a data frame (case sensitive)
+# grep("TotalP",colnames(EditedData))
+# colnames(EditedData[c(grep("TotalP",colnames(EditedData)))])
