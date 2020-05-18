@@ -6,7 +6,7 @@ library(readxl)
 library(stringr)
 
 #Directory where all data you are working is located
-setwd("Y:/MTG - Mt Gibson/Koolan Island Coral Cover Analysis/images/edited")
+setwd("C:/Images")
 
 Filepaths=list.dirs(recursive = F)
 
@@ -82,13 +82,13 @@ rm(list = ls())
 library(dplyr)
 library("RColorBrewer")
 #Set working directory
-setwd("Y:/MTG - Mt Gibson/Koolan Island Coral Cover Analysis/Data/Working")
+setwd("C:/Working")
 
 #Upload file with benthic cover data
 # Allsites=read.csv("All sites/CoverageMatrix.csv")#All sites
-Allsites=read.csv("MScience sites/All/CoverageMatrix_MScience.csv")#All MScience
-# Allsites=read.csv("MScience sites/North/CoverageMatrixNorth_MS.csv")
-# Allsites=read.csv("MScience sites/South/CoverageMatrixSouth_MS.csv")
+Allsites=read.csv("All/CoverageMatrix_MScience.csv")#All 
+# Allsites=read.csv("North/CoverageMatrixNorth_MS.csv")
+# Allsites=read.csv("South/CoverageMatrixSouth_MS.csv")
 
 #Names of benthic groups
 substrate=c("Unknown","Bare substrate","Sediment","Macroalgae","Seagrass",
@@ -142,7 +142,7 @@ library(tidyr)
 library(dplyr)
 library("RColorBrewer")
 #Set working directory
-setwd("Y:/MTG - Mt Gibson/Koolan Island Coral Cover Analysis/Data/Working/MScienceSitesAllYears")
+setwd("C:/SitesAllYears")
 
 #ALL SITES ALL YEARS
 alldata=read.csv("AllSitesAllYears.csv")
@@ -191,13 +191,13 @@ rm(list = ls())
 
 library(raster)
 #library(ncdf4)
-setwd("Y:/MTG - Mt Gibson/Koolan Island Coral Cover Analysis/Data/Working")
+setwd("C:/Working")
 
 #Upload SST data as multilayer raster
 SSTraw=stack("KoolanSST_2014-2017.nc")
 
 #Upload sites
-sites=shapefile("../../../MTG1601_Nov Coral Assessment/GIS/GIS/SiteCoords.shp")
+sites=shapefile("SiteCoords.shp")
 
 #Match projections
 projection(SSTraw)=projection(sites)
@@ -255,7 +255,7 @@ library(ggmap)
 library(ggplot2)
 library(scatterpie)
 
-setwd("Y:/MTG - Mt Gibson/MTG1601_Nov Coral Assessment/GIS/GIS")
+setwd("C:/GIS")
 
 acpoints=read.csv("ACPoints.csv")
 names(acpoints)[2:15]=c("y","x","Unknown","Bare substrate","Sediment","Macroalgae","Seagrass",
