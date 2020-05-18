@@ -19,7 +19,7 @@ library(ggplot2)
 library(tidyr)
 
 #Set working directory - User defined (location of main folder containing Landsat images)
-setwd("T:/GIS_BHP1704/Doce water colour baseline/Satellite Images Rio Doce basin/")
+setwd("C:/Satellite Images/")
 
 #Find names for each Landsat scene
 Scenes = list.dirs(recursive = F)[c(which(grepl("P21",list.dirs(recursive = F))))]
