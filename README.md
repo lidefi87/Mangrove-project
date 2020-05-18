@@ -1,2 +1,2 @@
-# BRUVS Analysis
-EventMeasure files of the videos analysed for the CDF mangrove project.
+# README
+Scripts developed over the years to achieve different objectives, from data cleaning and visualisation to modelling.
