@@ -8,7 +8,7 @@ library(rgdal)
 library(RStoolbox)
 
 #Set working directory - where all data to be analysed is located
-setwd("Y:/BHP - BHP Billiton/BHP1704 ED Consultancy/GIS/Doce water colour baseline/Satellite Images Rio Doce basin/")
+setwd("C:/Satellite Images basin/")
 
 #Upload points for Rio Doce Path
 RioDoce = read.csv("RioDocePoints.csv")
