@@ -7,7 +7,7 @@ library(ggplot2)
 library(png)
 
 #Set working directory - address of the folder where your data is kept. Update Folder!!!!
-setwd("Y:/MTG - Mt Gibson/MTG1802_Dewatering monitoring/Reporting/Compliance Reporting/WeeklyReport5_26Aug-1Sep2018") 
+setwd("C:/WeeklyReport5_26Aug-1Sep2018") 
 #outputs will be saved in this folder
 
 ###################################### TURBIDITY DATA #########################################################
@@ -82,7 +82,7 @@ write.csv(Calcs, "ResultsDO2.csv")
 # Temp = transform(Temp, Date = as.Date(Date)) #format date to exclude time
 # Temp$Date = as.factor(Temp$Date)
 # 
-# ggplot(Temp,aes(x=Date,y=Temp))+geom_boxplot()+theme_bw()+labs(x = "",y="Temperature (°C)")+
+# ggplot(Temp,aes(x=Date,y=Temp))+geom_boxplot()+theme_bw()+labs(x = "",y="Temperature (Â°C)")+
 #   ylim((round(min(Temp$Temp),1))-2,(round(max(Temp$Temp),1))+2)+
 #   theme(axis.text.x=element_text(angle=90),panel.grid.major=element_blank(),
 #                      panel.grid.minor=element_blank(),axis.text = element_text(size = 14),
@@ -101,7 +101,7 @@ write.csv(Calcs, "ResultsDO2.csv")
 # Cond = transform(Cond, Date = as.Date(Date)) #format date to exclude time
 # Cond$Date = as.factor(Cond$Date)
 # 
-# ggplot(Cond,aes(x=Date,y=Cond))+geom_boxplot()+theme_bw()+labs(x = "",y="Conductivity (µS/cm)")+
+# ggplot(Cond,aes(x=Date,y=Cond))+geom_boxplot()+theme_bw()+labs(x = "",y="Conductivity (ÂµS/cm)")+
 #   ylim(48750,53000)+theme(axis.text.x=element_text(angle=90),panel.grid.major=element_blank(),
 #                     panel.grid.minor=element_blank(),axis.text = element_text(size = 12),
 #                     axis.title = element_text(size = 12))+
