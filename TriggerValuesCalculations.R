@@ -5,7 +5,7 @@ rm(list = ls())
 library(plyr)
 
 #Set working directory
-setwd("Y:/MTG - Mt Gibson/MTG1803 MMP Revision 2018/Denisse - working/Data")
+setwd("C:/Data")
 
 #Koolan seasons
 Wet = c("December", "January", "February", "March", "April")
@@ -65,7 +65,7 @@ par(mfrow = c(2,2))
 par(mar = c(5,5,2,1.5))
 
 #Temperature
-boxplot(TempMin ~ Season, data = MinWQP, ylab = "Temperature (°C)",
+boxplot(TempMin ~ Season, data = MinWQP, ylab = "Temperature (Â°C)",
         ylim = c(round(min(MinWQP$TempMin, na.rm = T), 1)-2, round(max(MinWQP$TempMin, na.rm = T),1)+2))
 
 #Salinity
@@ -93,9 +93,9 @@ Per20_80WQ = for(i in 13:18){
 # WetWQmin = MinWQP[c(which(MinWQP$Season == "wet")),]
 #
 # #Temperature
-# boxplot(TempMin ~ Site, data = DryWQmin, las = 2, ylab = "Temperature (°C)", main = "Dry season",
+# boxplot(TempMin ~ Site, data = DryWQmin, las = 2, ylab = "Temperature (Â°C)", main = "Dry season",
 #         ylim = c(round(min(MinWQP$TempMin, na.rm = T), 1)-2, round(max(MinWQP$TempMin, na.rm = T),1)+2))
-# boxplot(TempMin ~ Site, data = WetWQmin, las = 2, ylab = "Temperature (°C)", main = "Wet season",
+# boxplot(TempMin ~ Site, data = WetWQmin, las = 2, ylab = "Temperature (Â°C)", main = "Wet season",
 #         ylim = c(round(min(MinWQP$TempMin, na.rm = T),1)-2, round(max(MinWQP$TempMin, na.rm = T),1)+2))
 # 
 # #Salinity
