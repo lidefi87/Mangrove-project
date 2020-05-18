@@ -5,7 +5,7 @@
 rm(list = ls())
 
 #Set working directory - where all data you are working is located
-setwd("Y:/APL - Aust Potash Limited/APL1701 Lake Wells GDE/GIS/NDVI and NDWI")
+setwd("C:/NDVI and NDWI")
 
 #Upload data
 Values=read.csv("NDVI_NDWImeans.csv")
