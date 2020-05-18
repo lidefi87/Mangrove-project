@@ -11,7 +11,7 @@ library(rgdal)
 library(RStoolbox)
 
 #Set working directory - where all data to be analysed is located
-setwd("X:/GIS_BHP1704/Doce water colour baseline/Satellite Images Rio Doce basin/")
+setwd("C:/Satellite Images/")
 
 #Upload points for Rio Doce Path shapefile
 #RioDoce=shapefile("RioDocePoints.shp") # original river points
@@ -111,7 +111,7 @@ library(raster)
 library(rgdal)
 
 #Set working directory - where all data to be analysed is located
-setwd("Y:/BHP - BHP Billiton/BHP1704 ED Consultancy/GIS/Doce water colour baseline/Satellite Images Rio Doce basin/")
+setwd("C:/Satellite Images/")
 RioDoce=shapefile("RioDocePoints.shp")
 
 #Get directories of all locations of downloaded Landsat images
@@ -146,7 +146,7 @@ library(ggplot2)
 library(tidyr)
 
 #Set working directory - where all data to be analysed is located
-setwd("Y:/BHP - BHP Billiton/BHP1704 ED Consultancy/GIS/Doce water colour baseline/Satellite Images Rio Doce basin/")
+setwd("C:/Satellite Images/")
 
 #Get directories of all locations of downloaded Landsat images
 FilePaths=list.dirs()
