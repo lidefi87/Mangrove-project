@@ -22,7 +22,7 @@ library(rgdal)
 library(RStoolbox)
 
 #Set working directory - main folder containing images and feature layers of the area of interest
-setwd("T:/GIS_BHP1704/Doce water colour baseline/Satellite Images Rio Doce basin/") # user defined
+setwd("C:/Satellite Images/") # user defined
 
 #Upload points for Rio Doce Path shapefile
 RioDocepts = shapefile("RioDoceEdited20180716.shp") # river points - user defined
