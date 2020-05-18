@@ -15,7 +15,7 @@ rm(list=ls())
 library(plyr)
 
 #Set working directory
-setwd("C:/Users/Denisse/Desktop/DoceTurbidity")
+setwd("C:/DoceTurbidity")
 
 #################################################################################################################
 #Data Cleaning - Preparing dataset of in-situ turbidity measurements for further processing
@@ -49,7 +49,7 @@ rm(list=ls())
 library(corrplot)
 
 #Set working directory
-setwd("C:/Users/Denisse/Desktop/DoceTurbidity")
+setwd("C:/DoceTurbidity")
 
 #Uploading pooled turbidity data January 2015 to August 2017
 AllTurb = read.csv("Data/CombinedDataJan15Aug17.csv")
