@@ -9,7 +9,7 @@ library(ggplot2)
 library(tidyr)
 
 #Set working directory - where all data to be analysed is located
-setwd("T:/GIS_BHP1704/Doce water colour baseline/Satellite Images Rio Doce basin/")
+setwd("C:/Satellite Images/")
 
 #Get directories of all locations of downloaded Landsat images
 FilePaths=list.dirs()
