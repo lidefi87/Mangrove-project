@@ -4,7 +4,7 @@
 rm(list=ls())
 
 #Set working directory
-setwd("Y:/MTG - Mt Gibson/MTG1802_Dewatering monitoring/MTG - Turbidity/Water Quality")
+setwd("C:/Water Quality")
 
 #Upload libraries
 library(ggplot2)
