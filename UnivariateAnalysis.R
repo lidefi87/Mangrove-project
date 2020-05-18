@@ -2,7 +2,7 @@
 rm(list=ls())
 
 #Set working directory
-setwd("Y:/SOS - Seas Offshore/SOS1701 Stybarrow offshore/Data/Infauna")
+setwd("C:/Infauna")
 
 #Upload dataset
 Div=read.csv("Diversity.csv")
