@@ -6,7 +6,7 @@ library(readxl)
 library(stringr)
 
 #Directory where all data you are working is located
-setwd("Y:/MTG - Mt Gibson/Koolan Island Coral Cover Analysis/images/edited")
+setwd("C:/Data")
 
 Filepaths=list.dirs(recursive = F)
 
