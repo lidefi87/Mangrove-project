@@ -6,7 +6,7 @@ library(tidyr)
 library(lubridate)
 
 #Set directory to location of data
-setwd("Y:/DEN - DENR NT govt/DEN1701 Ecoregional Data/GIS/Denisse")
+setwd("C:/Denisse")
 
 #Upload files
 EditedData=read.csv("DEN1701 Timor Sea_data.csv")
