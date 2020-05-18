@@ -4,7 +4,7 @@ rm(list = ls())
 library(plyr)
 
 #Directory where all data you are working is located
-ParentPath="Y:/BHP - BHP Billiton/BHP1703 Acoustic Survey - Oct 2017/Data/Hydroacoustics/Reanalysis_Dec12"
+ParentPath="C:/Reanalysis_Dec12"
 #Set directory to above path
 setwd(ParentPath)
 
