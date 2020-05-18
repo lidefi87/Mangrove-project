@@ -19,7 +19,7 @@ library(stringr)
 library(plyr)
 
 #Set working directory - Location of Sonar5 outputs
-setwd("Y:/BHP - BHP Billiton/BHP1704d Marine Survey/Data/Hydroacoustics/Data Analysis/BiomassOutputs")
+setwd("C:/BiomassOutputs")
 
 #List all datasets (.csv files) in current directory
 BioData = list.files(pattern = ".csv")
@@ -177,7 +177,7 @@ summary(DepthDif)
 
 #Interactions between biomass and abiotic variables (CTD data)
 #Set working directory for abiotic data
-setwd("Y:/BHP - BHP Billiton/BHP1704d Marine Survey/Data/Hydroacoustics/Data Analysis/R Outputs")
+setwd("C:/R Outputs")
 
 #Upload dataset
 Abiotic = read.csv("AbioticVariables.csv")
