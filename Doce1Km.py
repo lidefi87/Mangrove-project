@@ -9,14 +9,14 @@ arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = True
 
 #Uploading Rio Doce buffer polygon to define area of interest (AOI)
-DoceBuff = r"T:\GIS_BHP1704\Doce water colour baseline\Satellite Images Rio Doce basin\Buffer1000m.shp"
+DoceBuff = r"C:\Buffer1000m.shp"
 arcpy.env.mask = DoceBuff
 
 #Uploading river points with desired CRS
-riverPts = r"T:/GIS_BHP1704/Doce water colour baseline/Satellite Images Rio Doce basin/RioDoceEdited20180716.shp"
+riverPts = r"C:/RioDoceEdited20180716.shp"
 
 #Setting working directory to main folder containing landsat images
-FP = r"T:/GIS_BHP1704/Doce water colour baseline/Satellite Images Rio Doce basin/"
+FP = r"C:/Satellite Images Rio Doce basin/"
 
 #Getting a list of all scenes contained in folder
 x = os.listdir(FP)
