@@ -63,8 +63,8 @@ rownames(EnvCoral)=paste(datasets)
 y=gsub("[^A-Z]","",toupper(datasets))
 EnvCoral[,1]=match(y,groups$`unique(gsub("[^A-Z]", "", toupper(datasets)))`) #extract only letters from datasets
 
-write.csv(AllCoralCounts,file = "../../Data/Working/CoverageMatrix.csv")
-write.csv(EnvCoral,file = "../../Data/Working/EnvMatrix.csv")
+write.csv(AllCoralCounts,file = "CoverageMatrix.csv")
+write.csv(EnvCoral,file = "EnvMatrix.csv")
 
 
 ###############################################################################################
@@ -76,7 +76,7 @@ rm(list = ls())
 library(dplyr)
 library("RColorBrewer")
 #Set working directory
-setwd("Y:/MTG - Mt Gibson/Koolan Island Coral Cover Analysis/Data/Working")
+setwd("C:/Data/Working")
 
 #Upload file with benthic cover data
 # Allsites=read.csv("All sites/CoverageMatrix.csv")#All sites
@@ -135,13 +135,13 @@ rm(list = ls())
 
 library(raster)
 #library(ncdf4)
-setwd("Y:/MTG - Mt Gibson/Koolan Island Coral Cover Analysis/Data/Working")
+setwd("C:/Data/Working")
 
 #Upload SST data as multilayer raster
 SSTraw=stack("KoolanSST_2014-2017.nc")
 
 #Upload sites
-sites=shapefile("../../../MTG1601_Nov Coral Assessment/GIS/GIS/SiteCoords.shp")
+sites=shapefile("SiteCoords.shp")
 
 #Match projections
 projection(SSTraw)=projection(sites)
